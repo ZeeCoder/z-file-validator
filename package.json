@@ -1,0 +1,25 @@
+{
+  "name": "z-file-validator",
+  "version": "0.1.0",
+  "description": "Validating file inputs with the File Api.",
+  "main": "FileValidator.js",
+  "repository": "ZeeCoder/z-file-validator",
+  "keywords": [
+    "file",
+    "input",
+    "validation"
+  ],
+  "author": "Hubert Viktor",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ZeeCoder/z-file-validator/issues"
+  },
+  "homepage": "https://github.com/ZeeCoder/z-file-validator#readme",
+  "devDependencies": {
+    "clone": "^1.0.2",
+    "mocha": "^2.2.5"
+  },
+  "dependencies": {
+    "z-dom-config": "^0.1.1"
+  }
+}
