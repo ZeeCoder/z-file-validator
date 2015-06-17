@@ -3,8 +3,9 @@ var dom_config = require('z-dom-config');
 function FileValidator($input, dataAttrName, callback) {
     var self = this;
 
-    // This boolean variable if equals true, then validate function passes callback functions the all validation code in one array
-    this.is_fetch_array = false;
+    // If this boolean variable equals true, then the validation function
+    // returns all the possible error codes as an array.
+    this.returnErrorsInArray = false;
 
     // Config setup
     this.config = dom_config.load($input, dataAttrName)
@@ -30,14 +31,14 @@ function FileValidator($input, dataAttrName, callback) {
             validationCodes = self.validate(this.files[0]);
         }
 
-        if (self.is_fetch_array) {
+        if (self.returnErrorsInArray) {
             callback.apply($input[0], [validationCodes, $input[0].files[0], self.config]);
         } else {
             var validationCode = validationCodes.length ? validationCodes[0] : true;
             callback.apply($input[0], [validationCode, $input[0].files[0], self.config]);
         }
 
-        if (validationCodes.length) {
+        if (validationCodes.length !== 0) {
             $(this).val('');
         }
     });
@@ -92,8 +93,8 @@ FileValidator.prototype.validate = function(file) {
     return errors;
 };
 
-FileValidator.prototype.validationCodesByArray = function() {
-    this.is_fetch_array = true;
+FileValidator.prototype.returnValidationCodesInArray = function() {
+    this.returnErrorsInArray = true;
 };
 
 module.exports = FileValidator;
