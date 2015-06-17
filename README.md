@@ -14,11 +14,13 @@ something similar, like [WebPacker](http://webpack.github.io/).
 ## Example, explanation
 ```html
 <!--
-    For convenience, "max_size" can be given in numbers (bytes) or numbers
+    For convenience, "size.<min/max>" can be given in numbers (bytes) or numbers
     suffixed with either "Kb" or "Mb".
 -->
 <input type="file" class="js-file-validator" data-js-file-validator='{
-    "max_size": "5Mb"
+    "size": {
+        "max": "5Mb"
+    }
 }' accept="image/*">
 <div class="js-file-validator__label">
     <!-- This element will be used to report what the validator returned. -->
@@ -31,7 +33,9 @@ something similar, like [WebPacker](http://webpack.github.io/).
     Still, the following can be used for testing purposes.
 -->
 <input type="file" class="js-file-validator" data-js-file-validator='{
-    "max_size": "5Mb",
+    "size": {
+        "max": "5Mb"
+    },
     "accept": "image/*"
 }'>
 <div class="js-file-validator__label">
@@ -74,7 +78,8 @@ if (Modernizr.filereader) {
 ```
 
 ## Validation error codes
- - big_filesize - based on the "max_size" configuration,
+ - small_filesize - based on the "size.min" configuration,
+ - big_filesize - based on the "size.max" configuration,
  - bad_extension - based on the "accept" configuration,
  - no_file_selected - If a file was selected before, but after another browsing the user hits `esc`, then this error code will be returned.
 
