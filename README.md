@@ -78,6 +78,17 @@ if (Modernizr.filereader) {
  - bad_extension - based on the "accept" configuration,
  - no_file_selected - If a file was selected before, but after another browsing the user hits `esc`, then this error code will be returned.
 
+### Returning all error the codes
+By default, only one error code is given to the callback, but that behaviour can be changed, to instead return all the error codes in an array. (This will be the default behaviour from v1.0.0, see [Issue#3](https://github.com/ZeeCoder/z-file-validator/issues/3))
+
+To do that, you only need to call a method on the FileValidator instance:
+
+```js
+(new FileValidator(...arguments...))->returnValidationCodesInArray();
+```
+
+That's it! Now the `validationCode` parameter in the above examples will be an array of error codes, or true, if no validation error occured.
+
 ## Testing
 Tests are in a work-in-progress state.
 
