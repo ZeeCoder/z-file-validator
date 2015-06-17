@@ -3,6 +3,10 @@ var dom_config = require('z-dom-config');
 function FileValidator($input, dataAttrName, callback) {
     var self = this;
 
+    // If this boolean variable equals true, then the validation function
+    // returns all the possible error codes as an array.
+    this.returnErrorsInArray = false;
+
     // Config setup
     this.config = dom_config.load($input, dataAttrName)
     if ($input.attr('accept') !== undefined) {
@@ -22,20 +26,27 @@ function FileValidator($input, dataAttrName, callback) {
     }
 
     $input.change(function() {
-        var validationCode = 'no_file_selected';
+        var validationCodes = ['no_file_selected'];
         if ($(this).val() !== '') {
-            validationCode = self.validate(this.files[0]);
+            validationCodes = self.validate(this.files[0]);
         }
 
-        callback.apply($input[0], [validationCode, $input[0].files[0], self.config]);
+        if (self.returnErrorsInArray) {
+            callback.apply($input[0], [validationCodes, $input[0].files[0], self.config]);
+        } else {
+            var validationCode = validationCodes.length ? validationCodes[0] : true;
+            callback.apply($input[0], [validationCode, $input[0].files[0], self.config]);
+        }
 
-        if (validationCode !== true) {
+        if (validationCodes.length !== 0) {
             $(this).val('');
         }
     });
 }
 
 FileValidator.prototype.validate = function(file) {
+    var errors = [];
+
     if (
         typeof this.config.accept !== 'undefined' &&
         this.config.accept instanceof Array
@@ -68,7 +79,7 @@ FileValidator.prototype.validate = function(file) {
         }
 
         if (accepted === false) {
-            return 'bad_extension';
+            errors.push('bad_extension');
         }
     }
 
@@ -76,10 +87,14 @@ FileValidator.prototype.validate = function(file) {
         this.config.max_size !== undefined &&
         file.size > this.config.max_size
     ) {
-        return 'big_filesize';
+        errors.push('big_filesize');
     }
 
-    return true;
+    return errors;
+};
+
+FileValidator.prototype.returnValidationCodesInArray = function() {
+    this.returnErrorsInArray = true;
 };
 
 module.exports = FileValidator;
