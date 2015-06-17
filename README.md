@@ -51,8 +51,10 @@ if (Modernizr.filereader) {
             //     - "validationCode" is one of the error codes listed a bit later,
             //     - "file" is the file object the validator got from the checked input element,
             //     - "config" is the configuration parsed from the `data-*` attribute.
+            //                Note: the max_size configuration parameter will be returned as an
+            //                integer representing bytes.
 
-            // With all this information, any kind of (translated) error message
+            // With all this information, any kind of (possibly translated) error message
             // could be placed in it's proper place, like: "The max filesize is 5Mb!"
 
             // A simple example would be:
