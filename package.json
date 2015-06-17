@@ -1,6 +1,6 @@
 {
   "name": "z-file-validator",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Validating file inputs with the File Api.",
   "main": "FileValidator.js",
   "repository": "ZeeCoder/z-file-validator",
