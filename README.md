@@ -1,12 +1,17 @@
 # z-file-validator
+[![Build Status](https://travis-ci.org/ZeeCoder/z-file-validator.svg?branch=master)](https://travis-ci.org/ZeeCoder/z-file-validator)
 [![npm version](https://badge.fury.io/js/z-file-validator.svg)](http://badge.fury.io/js/z-file-validator)
 
-This module does a little bit of validation on a file input using the File Api.
-
-(It only works well with a single file.)
+This module was written to handle client-side file input validation, using the
+File API.
 
 **Note:** the plugin itself doesn't check for [File API support](http://caniuse.com/#feat=fileapi),
-so the examples will assume that Modernizr is available for such a task.
+so the examples will assume that you have something under your belt to handle
+that. (Like [Modernizr](http://modernizr.com).)
+
+*Also:* this module was written with jQuery in mind. This dependency will most
+likely be dropped in the future since hardly anything is used from jQuery's
+functionality.
 
 Since this is a CommonJS module, it must be used alongside with [Browserify](http://browserify.org/), or
 something similar, like [WebPacker](http://webpack.github.io/).
@@ -14,33 +19,46 @@ something similar, like [WebPacker](http://webpack.github.io/).
 ## Example, explanation
 ```html
 <!--
-    For convenience, "size.<min/max>" can be given in numbers (bytes) or numbers
-    suffixed with either "Kb" or "Mb".
+    For convenience, sizes can be given as byte integers, or as numbers suffixed
+    with one of the following: "Mb", "M", "Kb", "K".
+    (Separating the numbers and the suffixes is also allowed, so "1024 K" will
+    work just fine.)
+    After the module loads the configuration, these will automatically be
+    converted to byte integers. (In the example below, "5M" will be converted
+    to 5242880)
 -->
-<input type="file" class="js-file-validator" data-js-file-validator='{
+<!--
+    Providing the configuration through a data-* attribute is optional.
+    (Explained later in detail.)
+-->
+<input type="file" id="input" data-configuration='{
+    "collective": {
+        "size": {
+            "min": "1M",
+            "max": "20M"
+        },
+        "count": {
+            "min": 1,
+            "max": 3
+        }
+    },
     "size": {
-        "max": "5Mb"
+        "min": "1024K"
+        "max": "4M"
     }
 }' accept="image/*">
-<div class="js-file-validator__label">
-    <!-- This element will be used to report what the validator returned. -->
-<div>
 
 <!--
-    "accept" could be provided by the JSON configuration, but as an attribute,
-    most browsers will render the browsing window so that the selectable files
-    are already filtered.
-    Still, the following can be used for testing purposes.
+    Exmplanation for the configuration options:
+        - collective: These validations are running considering all the
+            selected files.
+        - "size" and "accept": These validations run for each selected file
+            individually.
+        - the "accept" attribute: this could also be provided by the JSON
+            configuration, but as an attribute, most browsers will render the
+            browsing window so that the selectable files are already filtered.
+            Still, it can be used for testing purposes.
 -->
-<input type="file" class="js-file-validator" data-js-file-validator='{
-    "size": {
-        "max": "5Mb"
-    },
-    "accept": "image/*"
-}'>
-<div class="js-file-validator__label">
-    <!-- This element will be used to report what the validator returned. -->
-<div>
 ```
 
 ```js
@@ -48,54 +66,95 @@ var FileValidator = require('z-file-validator');
 
 // Suppose we have Modernizr
 if (Modernizr.filereader) {
-    // Create a new object for every file input element
-    $('.js-file-validator').each(function() {
-        new FileValidator($(this), 'js-file-validator', function(validationCode, file, config) {
-            // Doing something based on the arguments, where
-            //     - "validationCode" is one of the error codes listed a bit later,
-            //     - "file" is the file object the validator got from the checked input element,
-            //     - "config" is the configuration parsed from the `data-*` attribute.
-            //                Note: the max_size configuration parameter will be returned as an
-            //                integer representing bytes.
+    // Saving the jQuery object for later use.
+    var $input = $('#input');
 
-            // With all this information, any kind of (possibly translated) error message
-            // could be placed in it's proper place, like: "The max filesize is 5Mb!"
+    // Initializing a FileValidator for the input
+    var validator = new FileValidator($input, 'configuration');
+    // Where
+    // $input          - The DOM input element selected by jQuery.
+    // 'configuration' - The data- attribute's name. Now it expects a
+    //                   `data-configuration` attribute to contain a valid
+    //                   JSON configuration.
+    //                   This could also be an object instead, in which case
+    //                   there's no need for the data-* attribute.
 
-            // A simple example would be:
+    // By default, if the `validator.validate()` returns an error, the validator
+    // also resets the file input. If you want to keep the selected value
+    // regardless of the validation result, then just use the following:
+    // `validator.setInputResetOnError(false);`
+    // before running the validation.
 
-            if (validationCode === true) {
-                // The input file is valid, so let's show the file's name in the label element
-                validationCode = file.name;
+    // Validate the input on change
+    $input.on('change', function() {
+        var validationResponse = validator.validate();
+
+        // If you need the loaded configuration to have more sensible error
+        // messages, you can just use the following:
+        var usedConfig = validator.getConfig();
+
+        if (validationResponse === true) {
+            // No problems were detected :thumbsup:
+        } else {
+            // An error occured, which can be a collective error, or a specific
+            // problem with one - or some - of the files.
+            if (validator.hasCollectiveErrors() === true) {
+                // In this case, `validationResponse` is an array of error code
+                // strings.
+                // Ex: `["collective.big_filesize", "collective.too_much_file"]`
+            } else {
+                // In this case, `validationResponse` is an array of arrays,
+                // where each contains 2 elements: an array of error codes,
+                // and the file data which was fetched from the FileApi.
+                // Ex:
+                // `[
+                //     [
+                //         ["big_filesize"],
+                //         File
+                //     ],
+                //     [
+                //         ["small_filesize", "bad_type"],
+                //         File
+                //     ]
+                // ]`
             }
-
-            // Selects "js-file-validator__label"
-            // If this is an error code, then it could be easily replaced with a
-            // proper message
-            $(this).next().text(validationCode);
-        });
+        }
     });
 }
 ```
 
 ## Validation error codes
- - small_filesize - based on the "size.min" configuration,
- - big_filesize - based on the "size.max" configuration,
- - bad_extension - based on the "accept" configuration,
- - no_file_selected - If a file was selected before, but after another browsing the user hits `esc`, then this error code will be returned.
 
-### Returning all error the codes
-By default, only one error code is given to the callback, but that behaviour can be changed, to instead return all the error codes in an array. (This will be the default behaviour from v1.0.0, see [Issue#3](https://github.com/ZeeCoder/z-file-validator/issues/3))
+### Collective
+ - "collective.big_filesize"
+ - "collective.small_filesize"
+ - "collective.too_few_file"
+ - "collective.too_much_file"
 
-To do that, you only need to call a method on the FileValidator instance:
+### Individual
+ - "big_filesize"
+ - "small_filesize"
+ - "bad_file_type"
+
+## Advanced usage
+
+Most of the FileValidator methods can be used individually, if needed.
+
+For example: with the `validateFile` method, it's possible to validate only a
+specific File:
 
 ```js
-(new FileValidator(...arguments...))->returnValidationCodesInArray();
+var FileValidator = require('z-file-validator');
+
+var validationResponse = FileValidator.prototype.validateFile(
+    $('#input')[0].files[1], // Validating only the second selected file
+    {size: {max: '5M'}} // It should be no bigger than 5M
+);
+
+console.log(validationResponse);
+// -> ["big_filesize"] or
+// -> true
 ```
-
-That's it! Now the `validationCode` parameter in the above examples will be an array of error codes, or true, if no validation error occured.
-
-## Testing
-Tests are in a work-in-progress state.
 
 ## License
 [MIT](LICENSE)
