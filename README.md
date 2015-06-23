@@ -43,10 +43,10 @@ something similar, like [WebPacker](http://webpack.github.io/).
         }
     },
     "size": {
-        "min": "1024K"
+        "min": "1024K",
         "max": "4M"
     }
-}' accept="image/*">
+}' accept="image/*" multiple>
 
 <!--
     Exmplanation for the configuration options:
