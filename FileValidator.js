@@ -5,27 +5,52 @@ var _ = {
     has: require('lodash/object/has')
 };
 
-function FileValidator($input, dataAttrNameOrConfig) {
+/**
+ * The file validator's constructor function.
+ *
+ * @param DOMObject|jQueryObject $input
+ * @param string|Object dataAttrNameOrConfig The data attribute's name, where
+ * the configuration is set on the DOM element, or an Object containing the
+ * configurations.
+ */
+function FileValidator(input, dataAttrNameOrConfig) {
+    if (typeof jQuery !== 'undefined' || typeof $ !== 'undefined') {
+        // There's a global jQuery object, so there's a chance, that the input
+        // variable is a jQuery Object.
+        if (input instanceof jQuery || input instanceof $) {
+            input = input[0];
+        }
+    }
+
+    if (input instanceof HTMLElement === false) {
+        console.warn('The provided element for the FileValidator does not seem to be a valid DOM Element. Exiting.');
+
+        return;
+    }
+
+    this.input = input;
+    // If an error occures, then the selected files are removed from the file
+    // input
+    this.inputResetOnError = true;
     // If this boolean variable equals true, then the validation function
     // returns all the possible error codes as an array.
-    this.$input = $input;
-    this.inputResetOnError = true;
     this.doHaveCollectiveErrors = false;
 
     // Getting the configuration
     if (typeof dataAttrNameOrConfig === 'string') {
-        this.config = dom_config.load($input, dataAttrNameOrConfig)
+        this.config = dom_config.load(this.input, dataAttrNameOrConfig)
     } else {
         this.config = dataAttrNameOrConfig;
     }
 
     // The "accept" attribute has higher priority, than the "accept" config
     // parameter
-    if (this.$input.attr('accept') !== undefined) {
-        this.config.accept = this.$input.attr('accept');
+    if (this.input.getAttribute('accept') !== null) {
+        this.config.accept = this.input.getAttribute('accept');
     }
     // Converting it to an array
     if (this.config.accept !== undefined) {
+        // console.log(this.config.accept);
         this.config.accept = this.config.accept.replace(/ /g, '').split(',');
     }
 
@@ -113,7 +138,7 @@ FileValidator.prototype.getCollectiveSizeByFiles = function(files) {
 };
 
 FileValidator.prototype.validate = function() {
-    var files = this.$input[0].files;
+    var files = this.input.files;
 
     // Checking for global errors
     var errors = [];
@@ -161,7 +186,7 @@ FileValidator.prototype.validate = function() {
     }
 
     if (this.inputResetOnError === true && errors.length > 0) {
-        this.$input.val('');
+        this.input.value = '';
     }
 
     return errors.length > 0 ? errors : true;

@@ -10,19 +10,19 @@ var general_tests               = require('./fixtures/general_tests');
 var function_tests              = require('./fixtures/function_tests');
 
 describe('testing FileValidator', function () {
-    var window, document, $;
-
     beforeEach(function(done) {
         var self = this;
         jsdom.env(
             fs.readFileSync(__dirname + '/fixtures/index.html', 'utf-8'),
             function (err, windowObj) {
-                window = windowObj;
-                document = windowObj.document;
-                $ = require('jquery')(window);
+                global.window = windowObj;
+                global.document = windowObj.document;
+                global.HTMLElement = windowObj.HTMLElement;
+                global.jQuery = global.$ = require('jquery');
 
                 self.$confTestInput = $('#conf-test-input');
                 self.$input = $('#input');
+                self.$input[0].removeAttribute('accept');
 
                 done();
             }

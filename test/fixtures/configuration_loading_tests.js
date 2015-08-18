@@ -31,7 +31,7 @@ module.exports = function() {
         });
 
         it('should prefer the "accept" data-attribute over the "accept" config param', function() {
-            this.$input.attr('accept', 'image/*');
+            this.$input[0].setAttribute('accept', 'image/*');
             var validator = new FileValidator(this.$input, {
                 accept: 'image/png, image/jpg'
             });
