@@ -5,13 +5,13 @@
 This module was written to handle client-side file input validation, using the
 File API.
 
-**Note:** the plugin itself doesn't check for [File API support](http://caniuse.com/#feat=fileapi),
+**Notes:**
+
+ - the plugin itself doesn't check for [File API support](http://caniuse.com/#feat=fileapi),
 so the examples will assume that you have something under your belt to handle
 that. (Like [Modernizr](http://modernizr.com).)
-
-*Also:* this module was written with jQuery in mind. This dependency will most
-likely be dropped in the future since hardly anything is used from jQuery's
-functionality.
+ - Although I use jQuery in the examples for convenience, the module itself does
+ not depend on jQuery!
 
 Since this is a CommonJS module, it must be used alongside with [Browserify](http://browserify.org/), or
 something similar, like [WebPacker](http://webpack.github.io/).
@@ -70,6 +70,8 @@ if (Modernizr.filereader) {
     var $input = $('#input');
 
     // Initializing a FileValidator for the input
+    // It also accepts HTMLElement objects, providing a jQuery object here  is
+    // optional.
     var validator = new FileValidator($input, 'configuration');
     // Where
     // $input          - The DOM input element selected by jQuery.
